@@ -32,9 +32,12 @@ class SortingTool:
 
     def long(self):
         for row in self.data:
-            nums = list(
-                map(int, filter(lambda x: x.lstrip("-+").isnumeric(), row.split()))
-            )
+            nums = []
+            for num in row.split():
+                try:
+                    nums.append(int(num))
+                except:
+                    print(f'"{num}" is not a long. It will be skipped.')
             self.process_array(nums)
 
     def word(self):
@@ -85,13 +88,21 @@ class SortingTool:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-dataType", choices=["word", "long", "line"], default="word")
-    parser.add_argument(
-        "-sortingType", choices=["natural", "byCount"], default="natural"
-    )
-    args = parser.parse_args()
-    sorting_type = args.sortingType
-    data_type = args.dataType
-st = SortingTool(data_type, sorting_type)
-st.start()
+    try:
+        parser = argparse.ArgumentParser(exit_on_error=False)
+        parser.add_argument(
+            "-dataType", choices=["word", "long", "line"], default="word"
+        )
+        parser.add_argument(
+            "-sortingType", choices=["natural", "byCount"], default="natural"
+        )
+        args, unknown = parser.parse_known_args()
+        if unknown:
+            for p in unknown:
+                print(f'"{p}" is not a valid parameter. It will be skipped.')
+        sorting_type = args.sortingType
+        data_type = args.dataType
+        st = SortingTool(data_type, sorting_type)
+        st.start()
+    except argparse.ArgumentError as e:
+        print(f"No {e.argument_name[1:-4]} type defined!")
