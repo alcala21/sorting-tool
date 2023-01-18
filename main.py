@@ -1,4 +1,3 @@
-import sys
 import argparse
 
 
@@ -7,8 +6,6 @@ class SortingTool:
         self.data = []
         self.dtype = data_type
         self.stype = sorting_type
-        self.max_val = -float("inf") if self.dtype == "long" else ""
-        self.max_count = 0
         self.count = 0
         self.value_counts = {}
         self.values = []
@@ -17,20 +14,10 @@ class SortingTool:
             "line": self.line,
             "long": self.long,
         }
-        self.keywords = {
-            "long": {
-                "plural": "numbers",
-                "adjective": "greatest",
-                "singular": "number",
-            },
-            "line": {"plural": "lines", "adjective": "longest", "singular": "line"},
-            "word": {"plural": "words", "adjective": "longest", "singular": "word"},
-        }
-        self.integers = []
+        self.keywords = {"long": "numbers", "line": "lines", "word": "words"}
 
     def start(self):
-        # self.get_input()
-        self.data = ["1 -2   33 4", "42", "1                 1"]
+        self.get_input()
         if self.data:
             self.process[self.dtype]()
             self.sort_values()
@@ -39,7 +26,7 @@ class SortingTool:
     def get_input(self):
         while True:
             try:
-                self.data.append(input())
+                self.data.append(input().strip())
             except EOFError:
                 break
 
@@ -57,21 +44,6 @@ class SortingTool:
 
     def line(self):
         self.process_array(self.data)
-
-    @staticmethod
-    def max(arr):
-        if isinstance(arr[0], int):
-            return max(arr)
-        max_len = max(map(len, arr))
-        same_length = list(filter(lambda x: len(x) == max_len, arr))
-        return max(same_length)
-
-    def new_max_value(self, value):
-        if self.dtype == "long":
-            return value > self.max_val
-        return len(value) > len(self.max_val) or (
-            len(value) == len(self.max_val) and value > self.max_val
-        )
 
     def process_array(self, arr):
         self.values += arr
@@ -98,21 +70,16 @@ class SortingTool:
 
     def print(self):
         self.count = len(self.values)
-        first_line = f"Total {self.keywords[self.dtype]['plural']}: {self.count}."
+        first_line = f"Total {self.keywords[self.dtype]}: {self.count}."
         second_line = ""
         if self.stype == "natural":
-            char = '\n' if self.dtype == 'line' else ' '
+            char = "\n" if self.dtype == "line" else " "
             second_line += f"Sorted data:{char}{char.join(map(str, self.values))}"
         else:
             for value, count in self.value_counts.items():
-                second_line += f"{value}: {count} time(s), {int(count/self.count * 100)}%\n"
-            # second_line = f"The {self.keywords[self.dtype]['adjective']} {self.keywords[self.dtype]['singular']}:"
-            # second_line += "\n" if self.dtype == "line" else " "
-            # second_line += f"{self.max_val}"
-            # second_line += "\n" if self.dtype == "line" else " "
-            # second_line += (
-            #     f"({self.max_count} time(s), {int(self.max_count/self.count * 100)}%)."
-            # )
+                second_line += (
+                    f"{value}: {count} time(s), {int(count/self.count * 100)}%\n"
+                )
         print(first_line)
         print(second_line)
 
@@ -126,7 +93,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     sorting_type = args.sortingType
     data_type = args.dataType
-data_type = "line"
-sorting_type = "natural"
 st = SortingTool(data_type, sorting_type)
 st.start()
