@@ -2,7 +2,7 @@ import argparse
 
 
 class SortingTool:
-    def __init__(self, data_type="word", sorting_type="natural"):
+    def __init__(self, data_type="word", sorting_type="natural", input_file=None, output_file=None):
         self.data = []
         self.dtype = data_type
         self.stype = sorting_type
@@ -15,6 +15,8 @@ class SortingTool:
             "long": self.long,
         }
         self.keywords = {"long": "numbers", "line": "lines", "word": "words"}
+        self.ifile = input_file
+        self.ofile = output_file
 
     def start(self):
         self.get_input()
@@ -24,11 +26,15 @@ class SortingTool:
             self.print()
 
     def get_input(self):
-        while True:
-            try:
-                self.data.append(input().strip())
-            except EOFError:
-                break
+        if self.ifile:
+            with open(self.ifile, 'r') as f:
+                self.data = f.read().split('\n')
+        else:
+            while True:
+                try:
+                    self.data.append(input().strip())
+                except EOFError:
+                    break
 
     def long(self):
         for row in self.data:
@@ -73,18 +79,20 @@ class SortingTool:
 
     def print(self):
         self.count = len(self.values)
-        first_line = f"Total {self.keywords[self.dtype]}: {self.count}."
-        second_line = ""
+        output = f"Total {self.keywords[self.dtype]}: {self.count}.\n"
         if self.stype == "natural":
             char = "\n" if self.dtype == "line" else " "
-            second_line += f"Sorted data:{char}{char.join(map(str, self.values))}"
+            output += f"Sorted data:{char}{char.join(map(str, self.values))}"
         else:
             for value, count in self.value_counts.items():
-                second_line += (
+                output += (
                     f"{value}: {count} time(s), {int(count/self.count * 100)}%\n"
                 )
-        print(first_line)
-        print(second_line)
+        if self.ofile:
+            with open(self.ofile, 'w') as f:
+                f.write(output)
+        else:
+            print(output)
 
 
 if __name__ == "__main__":
@@ -96,13 +104,17 @@ if __name__ == "__main__":
         parser.add_argument(
             "-sortingType", choices=["natural", "byCount"], default="natural"
         )
+        parser.add_argument("-inputFile", default=None)
+        parser.add_argument("-outputFile", default=None)
         args, unknown = parser.parse_known_args()
         if unknown:
             for p in unknown:
                 print(f'"{p}" is not a valid parameter. It will be skipped.')
         sorting_type = args.sortingType
         data_type = args.dataType
-        st = SortingTool(data_type, sorting_type)
+        input_file = args.inputFile
+        output_file = args.outputFile
+        st = SortingTool(data_type, sorting_type, input_file, output_file)
         st.start()
     except argparse.ArgumentError as e:
         print(f"No {e.argument_name[1:-4]} type defined!")
